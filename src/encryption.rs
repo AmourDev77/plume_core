@@ -17,21 +17,3 @@ pub fn generate_keys() -> (String, String) {
     (base64_private, base64_public)
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Me {
-    username: String,
-    public_ed: String
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Friend {
-    username: String,
-    public_ed: String,
-    shared_key: [u8; 32]
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Config {
-    me: Me,
-    friends: Vec<Friend>
-}

@@ -3,7 +3,7 @@ use std::{env, fmt::format, fs, io::BufRead};
 use base64::{engine::general_purpose::URL_SAFE, Engine};
 use ed25519_dalek::SecretKey;
 use serde::{Deserialize, Serialize};
-use x25519_dalek::PublicKey;
+use x25519_dalek::{PublicKey, StaticSecret};
 
 pub mod encryption;
 
@@ -78,14 +78,14 @@ pub fn add_friend(own_public_x: String, friend_public_x_base64: String, friend_p
     let config_file = format!("{}/config.json", config_path);
 
     let decoded_friend_key: [u8; 32] = URL_SAFE.decode(friend_public_x_base64).expect("Error decrypting base64 key").try_into().expect("Invalid key provided");
-    let friend_public_x = PublicKey::from(decoded_key);
+    let friend_public_x = PublicKey::from(decoded_friend_key);
     
     let transaction_name = format!("friend-{}", own_public_x);
     let transaction_file = fs::File::open(format!("{}/{}", config_path, transaction_name)).expect("Unable to open transaction file");
     let transaction_data: Transaction = serde_json::from_reader(transaction_file).expect("Unable to read transaction file");
 
     let decoded_secret: [u8; 32] = URL_SAFE.decode(transaction_data.secret).expect("Invalid key, decryption failed").try_into().expect("Invalid key");
-    let own_secret = SecretKey::from(decoded_secret).into();
+    let own_secret: StaticSecret = StaticSecret::from(decoded_secret);
 
     let shared = own_secret.diffie_hellman(&friend_public_x);
 

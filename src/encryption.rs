@@ -1,5 +1,5 @@
 use base64::{engine::general_purpose::URL_SAFE, Engine};
-use ed25519_dalek::{pkcs8::{EncodePrivateKey, EncodePublicKey}, SigningKey, VerifyingKey};
+use ed25519_dalek::{ed25519::signature::SignerMut, pkcs8::{DecodePrivateKey, EncodePrivateKey, EncodePublicKey}, SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use x25519_dalek::PublicKey;
 
@@ -38,4 +38,17 @@ pub fn generate_ed_keys() -> (String, String) {
 /// Stirng target_public = user public w25519 key
 pub fn generate_shared_key(user_private: String, target_public: String) -> String {
     todo!()
+}
+
+
+// ---------- Key usage ----------
+
+/// This function will encrypt a message using the given key.
+/// Key must be given in pkcs8 encoded format
+pub fn sign_packet(packet: String, key: &str) -> String {
+    let mut key: SigningKey = SigningKey::from_pkcs8_pem(&key).expect("Invalid Signing key provided, unable to send packet");
+
+
+    let signature = key.try_sign(packet.as_bytes()).expect("Error signing packet");
+    format!("{}__{}", packet, signature)
 }

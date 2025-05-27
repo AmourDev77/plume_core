@@ -1,8 +1,4 @@
-use std::{env, fs};
-
-use serde::{Deserialize, Serialize};
-use x25519_dalek::{PublicKey, StaticSecret};
-use base64::{engine::general_purpose::URL_SAFE, Engine};
+use crate::encryption;
 
 /// Send a message to a relay with the following structure : message--author-<ed25519_pub>--target-<ed25519_pub>--<encryptedMessage_>--<signature>
 /// This function will handle the message encryption and signature then it will send it to the relay
@@ -20,13 +16,20 @@ pub fn send_message_relay(auhtor_key: String, target_key: String, shared_key: St
     todo!()
 }
 
-/// Send a friend request to a user using his ed25519 public key. This generates a combinaison of
-/// x25519 keys which are returned
+/// Generates the packet which is needed to send a friend request, also generates the requred x25519 keys which are returned in base64.
+///
+/// Final return is an array of length 3 which contains : [packet, author_x_public, author_x_private]
+///
 /// The followings arguments are needed : 
 /// String target_key = Target ed25519 public key, will be stored
-/// String author_key = Author ed25519 key
-pub fn request_friend(target_key: String, auhtor_key: String) -> (String, String) {
-    todo!()
+/// String author_ed = Author ed25519 key
+/// String author_name = username of the author sent to the target
+/// String author_private_ed = author private ed key, used to sign the package
+pub fn request_friend(target_ed: String, author_ed: String, author_name: String, author_private_ed: String) -> [String; 3]{
+    let (author_x_pub, author_x_priv) = encryption::generate_x_keys();
+    let packet = format!("friend_request__{}__{}__{}__{}", author_ed, target_ed, author_x_pub, author_name);
+
+    return [encryption::sign_packet(packet, &author_private_ed), author_x_pub, author_x_priv]
 }
 
 /// Generate a new transaction to ask a friend, 

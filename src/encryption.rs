@@ -52,3 +52,9 @@ pub fn sign_packet(packet: String, key: &str) -> String {
     let signature = key.try_sign(packet.as_bytes()).expect("Error signing packet");
     format!("{}__{}", packet, signature)
 }
+
+
+/// This function is used to encrypt the content of a message using the x25519 shared key
+pub fn encrypt_message(message: String, sharedKey: String) -> String {
+    todo!()
+}

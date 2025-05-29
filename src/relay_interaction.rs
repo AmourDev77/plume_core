@@ -25,7 +25,7 @@ pub fn send_message_relay(auhtor_key: String, target_key: String, shared_key: St
 /// String author_ed = Author ed25519 key
 /// String author_name = username of the author sent to the target
 /// String author_private_ed = author private ed key, used to sign the package
-pub fn request_friend(target_ed: String, author_ed: String, author_name: String, author_private_ed: String) -> [String; 3]{
+pub fn request_friend(target_ed: &str, author_ed: &str, author_name: &str, author_private_ed: &str) -> [String; 3]{
     let (author_x_pub, author_x_priv) = encryption::generate_x_keys();
     let packet = format!("friend_request__{}__{}__{}__{}", author_ed, target_ed, author_x_pub, author_name);
 

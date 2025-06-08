@@ -1,12 +1,11 @@
-use std::{env, fs};
-
+use std::{collections::HashMap, env, fs};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
     #[serde(rename = "@me")]
     pub me: Me,
-    pub friends: Vec<Friend>
+    pub friends: HashMap<String, Friend>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

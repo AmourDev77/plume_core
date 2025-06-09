@@ -8,6 +8,11 @@ pub enum TransactionError {
 }
 
 /// Generate a x25519 key combinaison
+///
+/// returns !
+/// ```rust
+/// (base64_private: String, base64_public: String)
+/// ```
 pub fn generate_x_keys() -> (String, String) {
     let secret = x25519_dalek::StaticSecret::random_from_rng(OsRng);
     let public = PublicKey::from(&secret); 
@@ -36,7 +41,7 @@ pub fn generate_ed_keys() -> (String, String) {
 /// Function Generate a shared key from two keys.
 /// String user_private = user private x25519 key
 /// Stirng target_public = user public w25519 key
-pub fn generate_shared_key(user_private: String, target_public: String) -> String {
+pub fn generate_shared_key(user_private: &str, target_public: &str) -> String {
     todo!()
 }
 

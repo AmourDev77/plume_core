@@ -20,7 +20,8 @@ pub fn init() {
             "username": "defaultUserName",
             "profile_picture": "None"
         },
-        "friends": {}
+        "friends": {},
+        "friend_requests": {}
     });
 
     println!("Creating folders");

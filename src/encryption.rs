@@ -1,4 +1,4 @@
-use base64::{engine::general_purpose::URL_SAFE, Engine};
+use base64::{engine::general_purpose::URL_SAFE, DecodeError, Engine};
 use ed25519_dalek::{ed25519::signature::SignerMut, pkcs8::{DecodePrivateKey, EncodePrivateKey, EncodePublicKey}, SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use x25519_dalek::PublicKey;
@@ -38,11 +38,40 @@ pub fn generate_ed_keys() -> (String, String) {
 }
 
 
+
+#[derive(Debug)]
+pub enum SharedGenerationError {
+    InvalidKeyError,
+    DecodeError
+}
+
+// Important for the "?" to be usable when using URL_SAFE.decode
+impl From<DecodeError> for SharedGenerationError {
+    fn from(_: DecodeError) -> Self {
+        SharedGenerationError::DecodeError
+    }
+}
+
+impl From<Vec<u8>> for SharedGenerationError {
+    fn from(_: Vec<u8>) -> Self {
+        SharedGenerationError::InvalidKeyError
+    }
+}
+
 /// Function Generate a shared key from two keys.
 /// String user_private = user private x25519 key
 /// Stirng target_public = user public w25519 key
-pub fn generate_shared_key(user_private: &str, target_public: &str) -> String {
-    todo!()
+pub fn generate_shared_key(user_private: &str, target_public: &str) -> Result<String, SharedGenerationError>  {
+    // first unhash the two keys
+    let decoded_private: [u8; 32] = URL_SAFE.decode(user_private)?.try_into()?;
+    let decoded_public: [u8; 32] = URL_SAFE.decode(target_public)?.try_into()?;
+
+    let private = x25519_dalek::StaticSecret::try_from(decoded_private).unwrap();
+    let public = x25519_dalek::PublicKey::try_from(decoded_public).unwrap();
+
+    let shared = private.diffie_hellman(&public);
+
+    return Ok(URL_SAFE.encode(shared));
 }
 
 

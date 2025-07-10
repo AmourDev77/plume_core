@@ -24,7 +24,9 @@ pub struct Me {
     pub public_ed_path: String,
     pub private_ed_path: String,
     pub username: String,
-    pub profile_picture: String
+    pub profile_picture: String,
+    pub friend_public_x_path: String,
+    pub friend_private_x_path: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -47,6 +49,6 @@ pub fn get_config() -> Config {
     let config_path = env::var("PLUME_CONFIG").expect("Config env var not set");
     let config_file = File::open(format!("{}/configs.json", config_path)).expect("Eror opening config file");
     let reader = BufReader::new(config_file);
-
+    
     serde_json::from_reader(reader).expect("Unable to convert this file to json")
 }

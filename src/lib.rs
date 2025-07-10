@@ -1,5 +1,6 @@
 use std::{env, fs};
 
+pub mod packets;
 pub mod encryption;
 pub mod relay_interaction;
 pub mod config;
@@ -18,7 +19,9 @@ pub fn init() {
             "public_ed_path": "",
             "private_ed_path": "",
             "username": "defaultUserName",
-            "profile_picture": "None"
+            "profile_picture": "None",
+            "friend_x_public_path": "", // booth are used for friend request only
+            "friend_x_private_path": ""
         },
         "friends": {},
         "friend_requests": {}

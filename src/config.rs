@@ -23,10 +23,10 @@ pub struct Friend {
 pub struct Me {
     pub public_ed_path: String,
     pub private_ed_path: String,
+    pub private_published_path: String,
+    pub public_published_path: String,
     pub username: String,
     pub profile_picture: String,
-    pub friend_public_x_path: String,
-    pub friend_private_x_path: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

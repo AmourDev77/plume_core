@@ -1,6 +1,8 @@
 use std::fs;
 
-use crate::{config::{self, Friend, Me}, encryption::{self, sign_packet}};
+use serde::Serialize;
+
+use crate::{config::{self, Friend, Me, UserInformation}, encryption::{self, sign_packet}};
 
 /// Generates a packet requesting a relay to provide the target's public x25519 key.
 /// 
@@ -14,15 +16,10 @@ use crate::{config::{self, Friend, Me}, encryption::{self, sign_packet}};
 /// A `Result` containing:
 /// - `Ok(String)` with the target public x25519 key.
 /// - `Err(PacketGenerationError)` if an error occurs during packet generation.
-pub fn retrieve_published_x(target_public_ed: &str) -> Result<String, std::io::Error> {
+pub fn retrieve_published_x(target_public_ed: &str, author_public_ed: &str, author_private_ed: &str) -> Result<String, std::io::Error> {
     // Result would be retrieve_shared_x__<author_public_ed>__<target_public_ed>__<signature>
-
-    let author_public_ed = fs::read_to_string(config::get_config().me.public_ed_path)?;
-    let author_private_ed = fs::read_to_string(config::get_config().me.private_ed_path)?;
-
-    let packet = format!("retrieve_shared_x__{}__{}", author_public_ed, target_public_ed);
-
-    return Ok(sign_packet(packet, &author_private_ed))
+    let packet = format!("retrieve_published__{author_public_ed}__{target_public_ed}");
+    Ok(sign_packet(packet, author_private_ed))
 }
 
 /// Generates the friend request packet with the provided details.
@@ -38,8 +35,25 @@ pub fn retrieve_published_x(target_public_ed: &str) -> Result<String, std::io::E
 /// # Description
 /// This function generates a friend request packet that contains all the necessary details
 /// to initiate communication with a friend.
-pub fn generate_friend_request_packet(target_public_ed: &str, author_signing_key: &str, shared_key: &str, author_data: Me, author_x_public_key: &str) -> Result<String, super::PacketGenerationError> {
-    todo!("Generate the friend request packet")
+/// Payload is a striglified json of the user data
+pub fn generate_friend_request_packet(target_public_ed: &str, user_information: UserInformation<'_>, shared_key: &str) -> Result<String, super::PacketGenerationError> {
+    #[derive(Serialize)]
+    struct Payload<'a > {
+        username: &'a str,
+        profile_picture: &'a str,
+    }
+
+    let payload = Payload{
+        username: user_information.username,
+        profile_picture: user_information.profile_picture
+    };
+
+    let message = serde_json::to_string(&payload)?;
+    let encrypted_data = encryption::encrypt_payload(&message,shared_key);
+    let packet = format!("friend_request__{}__{}__{}", user_information.author_public_ed, target_public_ed, encrypted_data);
+
+
+    Ok(sign_packet(packet, user_information.author_private_ed))
 }
 
 /// Processes the received friend request packet to retrieve the friend's data.
@@ -64,16 +78,30 @@ pub fn retrieve_friend_data(packet: &str, shared_key: &str) -> Result<Friend,sup
 #[cfg(test)]
 mod tests {
     mod retrieve_published_x {
+        use crate::{encryption::sign_packet, packets::{friend_request::retrieve_published_x, PacketGenerationError}};
+
         #[test]
-        #[ignore = "not implemented yet"]
         fn correct_call() {
-            todo!("Generate the test for a correct call to the function")
+            let target_public_ed = "<target_ed>";
+            let author_public_ed = "<author_ed>";
+            let author_private_ed = "-----BEGIN PRIVATE KEY-----
+MFECAQEwBQYDK2VwBCIEIDYl6V3dZDi6Q/waB+XyLEv2bjdnNXoas2fpaSPFm+up
+gSEAiCd7Td+qdVFItJIHnRfszO9cnl+fcL/W2AIzCBuYsBE=
+-----END PRIVATE KEY-----";
+
+            let result = retrieve_published_x(target_public_ed, author_public_ed, author_private_ed);
+            assert_eq!(result.unwrap(), "retrieve_published__<author_ed>__<target_ed>__C8E5645E3103C15BE6FDF9AFFCD5EB5B84B11F8F15A999D7349CCE074C7099BD62E3E7D93733B706E1326880021BDBC7AA66DDD1CE967EFB7533F05300C6610C");
         }
 
         #[test]
-        #[ignore = "not implemented yet"]
         fn invalid_signing_key() {
-            todo!("Generate test using an invalid signing key");
+            let target_public_ed = "<target_ed>";
+            let author_public_ed = "<author_ed>";
+            let author_private_ed = "Invalid signing key";
+            let result = retrieve_published_x(target_public_ed, author_public_ed, author_private_ed);
+
+            assert!(result.is_err())
+            assert_eq!(result.unwrap_err(), Err(PacketGenerationError::InvalidSingingKey));
         }
 
         #[test]
@@ -84,6 +112,10 @@ mod tests {
     }
 
     mod generate_friend_request_packet {
-
+        #[test]
+        #[ignore = "not implemented"]
+        fn test_valid_data() {
+            todo!()
+        }
     }
 }

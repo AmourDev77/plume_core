@@ -68,12 +68,12 @@ pub fn generate_shared_key(user_private: &str, target_public: &str) -> Result<St
     let decoded_private: [u8; 32] = URL_SAFE.decode(user_private)?.try_into()?;
     let decoded_public: [u8; 32] = URL_SAFE.decode(target_public)?.try_into()?;
 
-    let private = x25519_dalek::StaticSecret::try_from(decoded_private).unwrap();
-    let public = x25519_dalek::PublicKey::try_from(decoded_public).unwrap();
+    let private = x25519_dalek::StaticSecret::from(decoded_private);
+    let public = x25519_dalek::PublicKey::from(decoded_public);
 
     let shared = private.diffie_hellman(&public);
 
-    return Ok(URL_SAFE.encode(shared));
+    Ok(URL_SAFE.encode(shared))
 }
 
 
@@ -91,7 +91,7 @@ pub fn sign_packet(packet: String, key: &str) -> String {
 
 
 /// This function is used to encrypt the content of a message using the x25519 shared key
-pub fn encrypt_message(message: String, sharedKey: String) -> String {
+pub fn encrypt_payload(message: &str, sharedKey: &str) -> String {
     todo!()
 }
 
@@ -105,7 +105,7 @@ impl fmt::Display for SignatureError {
     }
 }
 
-impl std::error::Error for SignatureError;
+impl std::error::Error for SignatureError {}
 
 /// Verify the signature of a given packet.
 /// Remember, a packet will always follow same structure : 
@@ -132,7 +132,7 @@ pub fn verify_packet_signature(packet: &str) -> Result<bool, SignatureError> {
 
         if let Ok(signature) = Signature::from_str(split_informations.pop().unwrap()) {
             let content = split_informations.join("__");
-            println!("Veriying string : {}", content);
+            println!("Veriying string : {content}");
 
             match key.verify_strict(content.as_bytes(), &signature) {
                 Ok(_) => {
@@ -153,9 +153,9 @@ pub fn verify_packet_signature(packet: &str) -> Result<bool, SignatureError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::encryption::verify_packet_signature;
-
+    #[test]
+    #[ignore = "Not implemented yet"]
     fn test_invalid_signature_verification() {
-        verify_packet_signature("");
+        todo!()
     }
 }

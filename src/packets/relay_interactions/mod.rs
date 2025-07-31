@@ -1,6 +1,4 @@
-use std::fs;
-
-use crate::{config, encryption::sign_packet, packets};
+use crate::encryption::sign_packet;
 
 /// Send a message to a relay with the following structure : message--author-<ed25519_pub>--target-<ed25519_pub>--<encryptedMessage_>--<signature>
 /// This function will handle the message encryption and signature then it will send it to the relay
@@ -14,7 +12,7 @@ use crate::{config, encryption::sign_packet, packets};
 /// String signing_key = author private ed25519 key, used for signature of the message
 /// String message = raw message to send
 /// String relay_address = address / ip of a relay
-pub fn send_message_relay(auhtor_key: String, target_key: String, shared_key: String, signing_key: String, message: String, relay_address: String) {
+pub fn send_message_relay(_auhtor_key: String, _target_key: String, _shared_key: String, _signing_key: String, _message: String, _relay_address: String) {
     todo!()
 }
 

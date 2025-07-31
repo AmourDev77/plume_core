@@ -36,6 +36,15 @@ pub struct FriendRequest {
     pub username: String,
     pub profile_picture: String,
 }
+pub struct UserInformation<'a > {
+    pub author_public_ed: &'a str,
+    pub author_private_ed: &'a str,
+    pub author_public_published: &'a str,
+    pub author_private_published: &'a str,
+    pub username: &'a str,
+    pub profile_picture: &'a str
+
+}
 
 /// This function update the config file of the user. 
 /// Arguments : 

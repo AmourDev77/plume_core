@@ -1,28 +1,44 @@
+use std::fmt::Display;
+
 pub mod friend_request;
 pub mod relay_interactions;
 
+#[derive(Debug)]
 pub enum PacketGenerationError {
     InvalidSingingKey,
     InvalidTargetEd,
     InvalidSharedKey,
+    InvalidPayloadSerialisation(serde_json::Error)
 }
 
-impl ToString for PacketGenerationError {
-    fn to_string(&self) -> String {
+impl Display for PacketGenerationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PacketGenerationError::InvalidTargetEd => {
-                return String::from("Invalid target ED_25519 key provided")
+                write!(f, "Invalid target ED_25519 key provided")?;
+                Ok(())
             }
             PacketGenerationError::InvalidSharedKey => {
-                return String::from("Invalid shared key provided")
+                write!(f, "Invalid shared key provided")?;
+                Ok(())
             }
             PacketGenerationError::InvalidSingingKey => {
-                return String::from("Invalid signing (private ED_25519) key provided")
+                write!(f, "Invalid signing (private ED_25519) key provided")?;
+                Ok(())
+            }
+            PacketGenerationError::InvalidPayloadSerialisation(e) => {
+                write!(f, "{e}")?;
+                Ok(())
             }
         }
     }
 }
 
+impl From<serde_json::Error> for PacketGenerationError {
+    fn from(value: serde_json::Error) -> Self {
+        PacketGenerationError::InvalidPayloadSerialisation(value)
+    }
+}
 
 pub enum PacketReadingError {
     InvalidSignature,

@@ -4,7 +4,7 @@ pub mod relay;
 #[derive(Debug)]
 pub enum PacketGenerationError {
     InvalidSingingKey,
-    InvalidTargetEd,
+    InvalidED,
     InvalidSharedKey,
     InvalidPayloadSerialisation(serde_json::Error)
 }
@@ -12,8 +12,8 @@ pub enum PacketGenerationError {
 impl Display for PacketGenerationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PacketGenerationError::InvalidTargetEd => {
-                write!(f, "Invalid target ED_25519 key provided")?;
+            PacketGenerationError::InvalidED => {
+                write!(f, "Invalid ED_25519 key provided")?;
                 Ok(())
             }
             PacketGenerationError::InvalidSharedKey => {
@@ -44,17 +44,20 @@ pub enum PacketReadingError {
     InvalidFormat
 }
 
-impl ToString for PacketReadingError {
-    fn to_string(&self) -> String {
+impl Display for PacketReadingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PacketReadingError::InvalidSignature => {
-                return String::from("Packet has an invalid signature");
+                write!(f, "Packet has an invalid signature")?;
+                Ok(())
             }
             PacketReadingError::InvalidSharedKey => {
-                return String::from("Unable to read payload, invalid shared key provided")
+                write!(f, "Unable to read payload, invalid shared key provided")?;
+                Ok(())
             }
             PacketReadingError::InvalidFormat => {
-                return String::from("Invalid format")
+                write!(f, "Invalid format")?;
+                Ok(())
             }
         }
     }

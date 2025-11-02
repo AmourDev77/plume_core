@@ -1,4 +1,5 @@
 use serde::Serialize;
+use crate::packets::{PacketReadingError, PacketGenerationError};
 
 use crate::{config::{Friend, UserInformation}, encryption::{self, sign_packet}};
 
@@ -34,7 +35,7 @@ pub fn retrieve_published_x(target_public_ed: &str, author_public_ed: &str, auth
 /// This function generates a friend request packet that contains all the necessary details
 /// to initiate communication with a friend.
 /// Payload is a striglified json of the user data
-pub fn generate_friend_request_packet(target_public_ed: &str, user_information: UserInformation<'_>, shared_key: &str) -> Result<String, super::PacketGenerationError> {
+pub fn generate_friend_request_packet(target_public_ed: &str, user_information: UserInformation<'_>, shared_key: &str) -> Result<String, PacketGenerationError> {
     #[derive(Serialize)]
     struct Payload<'a > {
         username: &'a str,
@@ -63,7 +64,7 @@ pub fn generate_friend_request_packet(target_public_ed: &str, user_information: 
 /// 
 /// # Description
 /// Parses the provided packet and extracts friend's relevant data for further actions.
-pub fn retrieve_friend_data(packet: &str, shared_key: &str) -> Result<Friend,super::PacketReadingError> {
+pub fn retrieve_friend_data(packet: &str, shared_key: &str) -> Result<Friend,PacketReadingError> {
     // Structure of friend request : 
     // friend_request__author_public_ed__target_public_ed__data(json encrypted)__signature
 

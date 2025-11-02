@@ -11,8 +11,7 @@ pub enum TransactionError {
 pub fn sign_packet(packet: String, key: &str) -> String {
     let mut key: SigningKey = SigningKey::from_pkcs8_pem(key).expect("Invalid Signing key provided, unable to send packet");
 
-
-    let signature = key.try_sign(packet.as_bytes()).expect("Error signing packet");
+    let signature = key.sign(packet.as_bytes());
     format!("{}__{}", packet, signature)
 }
 
@@ -24,15 +23,15 @@ pub fn encrypt_payload(message: &str, sharedKey: &str) -> String {
 
 
 #[derive(Debug)]
-pub struct SignatureError;
+pub struct FormatError;
 
-impl fmt::Display for SignatureError {
+impl fmt::Display for FormatError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Invalid format")
     }
 }
 
-impl std::error::Error for SignatureError {}
+impl std::error::Error for FormatError {}
 
 /// Verify the signature of a given packet.
 /// Remember, a packet will always follow same structure : 
@@ -45,17 +44,16 @@ impl std::error::Error for SignatureError {}
 ///
 /// Returns an error if the package has an invalid format (less than 3 parts separated by "__")
 ///
-pub fn verify_packet_signature(packet: &str) -> Result<bool, SignatureError> {
+pub fn verify_packet_signature(packet: &str) -> Result<bool, FormatError> {
     let mut split_informations: Vec<&str> = packet.split("__").collect();
 
     if split_informations.len() < 3 {
-        return Err(SignatureError);
+        return Err(FormatError);
     }
 
     if let Ok(key) = VerifyingKey::from_public_key_pem(split_informations[1]) {
         // Now we can verify message by joining all remaining elements with -- and compare the
         // signature + key with it
-
 
         if let Ok(signature) = Signature::from_str(split_informations.pop().unwrap()) {
             let content = split_informations.join("__");
@@ -80,9 +78,38 @@ pub fn verify_packet_signature(packet: &str) -> Result<bool, SignatureError> {
 
 #[cfg(test)]
 mod tests {
+    use crate::encryption::{sign_packet, verify_packet_signature};
+
+    // TEST KEYS ONLY - NOT FOR PRODUCTION - Safe for version control
+    const TEST_SECRET_FALSE: &str = r#"-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAKjzH5wXye36XrlRyzoR8pTTn5OXOCnZw3kJb64HTtgY=
+-----END PUBLIC KEY-----"#;
+
+    const TEST_SECRET_KEY: &str = r#"-----BEGIN PRIVATE KEY-----
+MFECAQEwBQYDK2VwBCIEIM2Ktbc39QNjliTncLurqP8FpnSuBsbMGcdwC8Y4e6vg
+gSEA2oJO54T5oBYTdCVxw6YVafXLkrfg8q0CLp2+28vIaXQ=
+-----END PRIVATE KEY-----"#;
+
+    const TEST_PUBLIC_KEY: &str = r#"-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA0ifZuxA7IXpdwvnt8q4AtLXAyl3Rtp6yAV7doQwCb3g=
+-----END PUBLIC KEY-----"#;
+
     #[test]
-    #[ignore = "Not implemented yet"]
     fn test_invalid_signature_verification() {
-        todo!()
+        let signed_packet = sign_packet(format!("test_packet__{}", TEST_PUBLIC_KEY), TEST_SECRET_FALSE);
+        println!("Packet: {}", signed_packet);
+        let verification = verify_packet_signature(&signed_packet).unwrap();
+        println!("Verif: {}", verification);
+        assert!(!verification);
+    }
+
+    #[test]
+    #[ignore = "not handled"]
+    fn test_valid_verification() {
+        let signed_packet = sign_packet(format!("test_packet__{}", TEST_PUBLIC_KEY), TEST_SECRET_KEY);
+        println!("Packet: {}", signed_packet);
+        let verification = verify_packet_signature(&signed_packet).unwrap();
+        println!("Verif: {}", verification);
+        assert!(verification)
     }
 }

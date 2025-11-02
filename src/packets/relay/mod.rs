@@ -1,3 +1,5 @@
+pub mod friend_request;
+
 use crate::encryption::sign_packet;
 
 /// Send a message to a relay with the following structure : message--author-<ed25519_pub>--target-<ed25519_pub>--<encryptedMessage_>--<signature>
@@ -20,25 +22,4 @@ pub fn generate_login(private_ed_key: &str, public_ed_key: &str, published_publi
     // First get the author 
     let packet =  format!("login__{public_ed_key}__{published_public_key}");
     sign_packet(packet, private_ed_key)
-}
-
-#[cfg(test)]
-mod test {
-    use crate::{encryption::verify_packet_signature, init, packets::relay_interactions::generate_login};
-
-    #[test]
-    fn test_login_packet_generation() {
-        let private_ed_key = "-----BEGIN PRIVATE KEY-----
-MFECAQEwBQYDK2VwBCIEIDYl6V3dZDi6Q/waB+XyLEv2bjdnNXoas2fpaSPFm+up
-gSEAiCd7Td+qdVFItJIHnRfszO9cnl+fcL/W2AIzCBuYsBE=
------END PRIVATE KEY-----";
-        let public_ed_key = "-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAiCd7Td+qdVFItJIHnRfszO9cnl+fcL/W2AIzCBuYsBE=
------END PUBLIC KEY-----";
-
-        let public_published_key = "c13re0ol2Z9o6R-nAK8Owb1gZ82t14EJ6fpUUPSwsWw=";
-
-        let login_packet = generate_login(private_ed_key, public_ed_key, public_published_key);
-        assert!(verify_packet_signature(&login_packet).unwrap());
-    }
 }

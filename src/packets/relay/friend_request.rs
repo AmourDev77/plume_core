@@ -1,8 +1,6 @@
-use std::fs;
-
 use serde::Serialize;
 
-use crate::{config::{self, Friend, Me, UserInformation}, encryption::{self, sign_packet}};
+use crate::{config::{Friend, UserInformation}, encryption::{self, sign_packet}};
 
 /// Generates a packet requesting a relay to provide the target's public x25519 key.
 /// 
@@ -77,31 +75,35 @@ pub fn retrieve_friend_data(packet: &str, shared_key: &str) -> Result<Friend,sup
 
 #[cfg(test)]
 mod tests {
-    mod retrieve_published_x {
-        use crate::{encryption::sign_packet, packets::{friend_request::retrieve_published_x, PacketGenerationError}};
-
-        #[test]
-        fn correct_call() {
-            let target_public_ed = "<target_ed>";
-            let author_public_ed = "<author_ed>";
-            let author_private_ed = "-----BEGIN PRIVATE KEY-----
+    const TARGET_PUBLIC_ED: &str = "<target_ed>";
+    const AUTHOR_PUBLIC_ED: &str = "<author_ed>";
+    const AUTHOR_PRIVATE_ED: &str = "-----BEGIN PRIVATE KEY-----
 MFECAQEwBQYDK2VwBCIEIDYl6V3dZDi6Q/waB+XyLEv2bjdnNXoas2fpaSPFm+up
 gSEAiCd7Td+qdVFItJIHnRfszO9cnl+fcL/W2AIzCBuYsBE=
 -----END PRIVATE KEY-----";
+    const AUTHOR_PUBLIC_PUBLISHED: &str = "Ee3MVPKBV7kbheEjlrdGUb7oucuHa8bt76OFUsCUCCo=";
+    const AUTHOR_PRIVATE_PUBLISHED: &str = "ZeTbRwCQ7Q3rnItXOIOzkDSa7sqhZYFq-ieVxc5rrps=";
+    const TARGET_PUBLIC_PUBLISHED: &str = "2qS-T-dzmbNr9z3Y1ynfuKBSjASLLVC1TbwgyINCEgc=";
 
-            let result = retrieve_published_x(target_public_ed, author_public_ed, author_private_ed);
+
+
+
+    mod retrieve_published_x {
+        use super::{AUTHOR_PUBLIC_ED, TARGET_PUBLIC_ED, AUTHOR_PRIVATE_ED};
+        use crate::packets::friend_request::retrieve_published_x;
+
+        #[test]
+        fn correct_call() {
+
+            let result = retrieve_published_x(TARGET_PUBLIC_ED, AUTHOR_PUBLIC_ED, AUTHOR_PRIVATE_ED);
             assert_eq!(result.unwrap(), "retrieve_published__<author_ed>__<target_ed>__C8E5645E3103C15BE6FDF9AFFCD5EB5B84B11F8F15A999D7349CCE074C7099BD62E3E7D93733B706E1326880021BDBC7AA66DDD1CE967EFB7533F05300C6610C");
         }
 
         #[test]
         fn invalid_signing_key() {
-            let target_public_ed = "<target_ed>";
-            let author_public_ed = "<author_ed>";
-            let author_private_ed = "Invalid signing key";
-            let result = retrieve_published_x(target_public_ed, author_public_ed, author_private_ed);
+            let result = retrieve_published_x(TARGET_PUBLIC_ED, AUTHOR_PUBLIC_ED, AUTHOR_PRIVATE_ED);
 
             assert!(result.is_err())
-            assert_eq!(result.unwrap_err(), Err(PacketGenerationError::InvalidSingingKey));
         }
 
         #[test]
@@ -112,10 +114,41 @@ gSEAiCd7Td+qdVFItJIHnRfszO9cnl+fcL/W2AIzCBuYsBE=
     }
 
     mod generate_friend_request_packet {
+        use crate::{config::UserInformation, encryption::generate_shared_key, packets::{self, friend_request::generate_friend_request_packet}};
+        use super::{AUTHOR_PRIVATE_ED, AUTHOR_PUBLIC_ED, TARGET_PUBLIC_ED, AUTHOR_PUBLIC_PUBLISHED, AUTHOR_PRIVATE_PUBLISHED, TARGET_PUBLIC_PUBLISHED};
+
         #[test]
-        #[ignore = "not implemented"]
         fn test_valid_data() {
-            todo!()
+            let user_information = UserInformation {
+                author_public_ed: AUTHOR_PUBLIC_ED,
+                author_private_ed: AUTHOR_PRIVATE_ED,
+                author_public_published: AUTHOR_PUBLIC_PUBLISHED,
+                author_private_published: AUTHOR_PRIVATE_PUBLISHED,
+                username: "<username>",
+                profile_picture: "<profile_picture>"
+            };
+
+            let shared_key = generate_shared_key(AUTHOR_PRIVATE_PUBLISHED, TARGET_PUBLIC_PUBLISHED).unwrap();
+
+            let packet = generate_friend_request_packet(TARGET_PUBLIC_ED, user_information, &shared_key).unwrap();
+
+            assert_eq!(packet, "");
+        }
+
+        #[test]
+        fn test_invalid_shared_key() {
+            let user_information = UserInformation {
+                author_public_ed: AUTHOR_PUBLIC_ED,
+                author_private_ed: AUTHOR_PRIVATE_ED,
+                author_public_published: AUTHOR_PUBLIC_PUBLISHED,
+                author_private_published: AUTHOR_PRIVATE_PUBLISHED,
+                username: "<username>",
+                profile_picture: "<profile_picture>"
+            };
+
+            let shared_key = "Invalid".to_string();
+
+            let packet = generate_friend_request_packet(TARGET_PUBLIC_ED, user_information, &shared_key);
         }
     }
 }

@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use crate::encryption::{generate_ed_keys, generate_x_keys};
+use crate::encryption::keys::{generate_ed_keys, generate_x_keys};
 
 pub mod packets;
 pub mod encryption;

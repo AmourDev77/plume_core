@@ -1,7 +1,5 @@
 use std::fmt::Display;
-
-pub mod friend_request;
-pub mod relay_interactions;
+pub mod relay;
 
 #[derive(Debug)]
 pub enum PacketGenerationError {

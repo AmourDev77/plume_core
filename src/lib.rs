@@ -5,6 +5,7 @@ use crate::encryption::keys::{generate_ed_keys, generate_x_keys};
 pub mod packets;
 pub mod encryption;
 pub mod config;
+pub mod transactions;
 
 /// Generate the basics configuration files along with default values
 /// Path of the file is taken from the PLUME_CONFIG environment variable

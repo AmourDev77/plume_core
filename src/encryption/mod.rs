@@ -2,10 +2,6 @@ use std::{fmt, str::FromStr};
 use ed25519_dalek::{ed25519::signature::SignerMut, pkcs8::{DecodePrivateKey, DecodePublicKey}, Signature, SigningKey, VerifyingKey};
 
 pub mod keys;
-
-pub enum TransactionError {
-    UnknownKeyError()
-}
 /// This function will encrypt a message using the given key.
 /// Key must be given in pkcs8 encoded format
 pub fn sign_packet(packet: String, key: &str) -> String {

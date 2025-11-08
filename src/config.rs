@@ -43,7 +43,6 @@ pub struct UserInformation<'a > {
     pub author_private_published: &'a str,
     pub username: &'a str,
     pub profile_picture: &'a str
-
 }
 
 /// This function update the config file of the user. 

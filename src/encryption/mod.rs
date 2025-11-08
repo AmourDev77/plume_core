@@ -12,6 +12,8 @@ pub fn sign_packet(packet: String, key: &str) -> String {
     let mut key: SigningKey = SigningKey::from_pkcs8_pem(key).expect("Invalid Signing key provided, unable to send packet");
 
     let signature = key.sign(packet.as_bytes());
+    println!("Packet is : {packet}");
+    println!("Signature is : {signature}");
     format!("{}__{}", packet, signature)
 }
 
@@ -58,12 +60,14 @@ pub fn verify_packet_signature(packet: &str) -> Result<bool, FormatError> {
         if let Ok(signature) = Signature::from_str(split_informations.pop().unwrap()) {
             let content = split_informations.join("__");
             println!("Veriying string : {content}");
+            println!("for the signatyre : {signature}");
 
             match key.verify_strict(content.as_bytes(), &signature) {
                 Ok(_) => {
                     return Ok(true);
                 },
-                Err(_) => {
+                Err(e) => {
+                    println!("Error occured : {e}");
                     return Ok(false);
                 }
             }
@@ -81,17 +85,18 @@ mod tests {
     use crate::encryption::{sign_packet, verify_packet_signature};
 
     // TEST KEYS ONLY - NOT FOR PRODUCTION - Safe for version control
-    const TEST_SECRET_FALSE: &str = r#"-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAKjzH5wXye36XrlRyzoR8pTTn5OXOCnZw3kJb64HTtgY=
------END PUBLIC KEY-----"#;
+    const TEST_SECRET_FALSE: &str = r#"-----BEGIN PRIVATE KEY-----
+MFECAQEwBQYDK2VwBCIEIGDToaV0gILFMUlAbNq6NJdyUEWYch47FwGoa4rKcdxS
+gSEAi1L3kwdtxK6jI7VwJbmHDNtG6lWEUfnD2p+I+2CQRy0=
+-----END PRIVATE KEY-----"#;
 
     const TEST_SECRET_KEY: &str = r#"-----BEGIN PRIVATE KEY-----
-MFECAQEwBQYDK2VwBCIEIM2Ktbc39QNjliTncLurqP8FpnSuBsbMGcdwC8Y4e6vg
-gSEA2oJO54T5oBYTdCVxw6YVafXLkrfg8q0CLp2+28vIaXQ=
+MFECAQEwBQYDK2VwBCIEII4MzC6PecjPUjn9tB0P4E3rZeCdFEKkpqkuc+pwgGGf
+gSEATQZcjspfl0p3g3JEnZz7CINX+eXOrBZVIdA4uhYw7fo=
 -----END PRIVATE KEY-----"#;
 
     const TEST_PUBLIC_KEY: &str = r#"-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEA0ifZuxA7IXpdwvnt8q4AtLXAyl3Rtp6yAV7doQwCb3g=
+MCowBQYDK2VwAyEATQZcjspfl0p3g3JEnZz7CINX+eXOrBZVIdA4uhYw7fo=
 -----END PUBLIC KEY-----"#;
 
     #[test]
@@ -104,7 +109,6 @@ MCowBQYDK2VwAyEA0ifZuxA7IXpdwvnt8q4AtLXAyl3Rtp6yAV7doQwCb3g=
     }
 
     #[test]
-    #[ignore = "not handled"]
     fn test_valid_verification() {
         let signed_packet = sign_packet(format!("test_packet__{}", TEST_PUBLIC_KEY), TEST_SECRET_KEY);
         println!("Packet: {}", signed_packet);

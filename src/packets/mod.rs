@@ -249,6 +249,9 @@ pub fn extract(data: &str) -> Result<Packet, PacketReadingError> {
         "retrieve_published" => {
             todo!("Generate the handle of this action")
         }
+        "register" => {
+            Ok(Packet::Register(serde_json::from_str(data)?))
+        }
         _ => {
             Err(PacketReadingError::Type)
         }

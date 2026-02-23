@@ -23,8 +23,10 @@ pub struct Friend {
 pub struct Me {
     pub public_ed_path: String,
     pub private_ed_path: String,
+    pub private_published_path: String,
+    pub public_published_path: String,
     pub username: String,
-    pub profile_picture: String
+    pub profile_picture: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,6 +35,14 @@ pub struct FriendRequest {
     pub friend_public_x: String,
     pub username: String,
     pub profile_picture: String,
+}
+pub struct UserInformation<'a > {
+    pub author_public_ed: &'a str,
+    pub author_private_ed: &'a str,
+    pub author_public_published: &'a str,
+    pub author_private_published: &'a str,
+    pub username: &'a str,
+    pub profile_picture: &'a str
 }
 
 /// This function update the config file of the user. 
@@ -47,6 +57,6 @@ pub fn get_config() -> Config {
     let config_path = env::var("PLUME_CONFIG").expect("Config env var not set");
     let config_file = File::open(format!("{}/configs.json", config_path)).expect("Eror opening config file");
     let reader = BufReader::new(config_file);
-
+    
     serde_json::from_reader(reader).expect("Unable to convert this file to json")
 }

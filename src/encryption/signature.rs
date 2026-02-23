@@ -1,8 +1,8 @@
-use std::env;
+use std::{env, str::FromStr};
 
-use ed25519_dalek::{Signer, SigningKey, pkcs8::DecodePrivateKey};
+use ed25519_dalek::{Signature as EdSignature, Signer, SigningKey, VerifyingKey, pkcs8::{DecodePrivateKey, DecodePublicKey}};
 
-use crate::packets::{Packet, PacketGenerationError};
+use crate::packets::{Packet, PacketGenerationError, PacketReadingError};
 pub trait Signature {
     fn get_signature_payload(&self) -> String;
     fn get_author_key(&self) -> &str;
@@ -87,5 +87,30 @@ pub fn sign_packet(packet: &mut Packet, private_key: &str) -> Result<(), PacketG
 
     let signature = key.sign(payload.as_bytes());
     packet.update_signature(signature.to_string());
+    Ok(())
+}
+
+/// Verify the signature of a given packet.
+/// Packet are sent in json format, each packet will have it's own way to make the signature
+/// payload
+///
+/// # Formats
+/// ## Login
+/// Signed payload is simply composed of the author key
+/// ## Messages
+/// Signed payload is author_key + recipent_key + content + sent_at
+/// ## Friend Request
+/// ## Retrieve Published
+pub fn verify_packet_signature(packet: &Packet) -> Result<(), PacketReadingError> {
+    let environment = env::var("ENV").unwrap_or_default();
+
+    // disable verify_packet_signature in dev env
+    if environment == "DEV" {
+        return Ok(())
+    }
+
+    let key = VerifyingKey::from_public_key_pem(packet.get_author_key())?;
+    let signature = EdSignature::from_str(packet.get_signature())?;
+    key.verify_strict(packet.get_signature_payload().as_bytes(), &signature)?;
     Ok(())
 }

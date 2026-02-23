@@ -4,7 +4,7 @@ use ed25519_dalek::{ed25519::signature, pkcs8::{self, spki}};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::encryption::verify_packet_signature;
+use crate::encryption::signature::verify_packet_signature;
 
 /// Differents types of packets, all new packets will be added here
 pub enum Packet {

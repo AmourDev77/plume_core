@@ -233,7 +233,7 @@ pub fn extract_and_verify (data: &str) -> Result<Packet, PacketReadingError> {
 
 pub fn extract(data: &str) -> Result<Packet, PacketReadingError> {
     let packet: Value = serde_json::from_str(data)?;
-    let packet_type = packet["action"].as_str().unwrap_or_default();
+    let packet_type = packet["headers"]["action"].as_str().unwrap_or_default();
     println!("Packet Type is : {}", packet_type);
 
     match packet_type {
